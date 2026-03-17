@@ -1,0 +1,19 @@
+{
+  "last_trained": 1773728673.8552046,
+  "metrics": {
+    "random_forest": {
+      "mae": 3.89,
+      "r2": 0.5366
+    },
+    "gradient_boost": {
+      "mae": 3.96,
+      "r2": 0.539
+    },
+    "ridge": {
+      "mae": 3.3,
+      "r2": 0.6797
+    }
+  },
+  "training_samples": 400,
+  "best_name": "ridge"
+}
