@@ -1,6 +1,7 @@
 services:
   - type: web
     name: acadai
+    plan: free
     runtime: python
     buildCommand: "cd frontend-new && npm install && npm run build && cd .. && pip install -r requirements.txt"
     startCommand: "gunicorn -b 0.0.0.0:$PORT backend.app:app --workers 2 --timeout 120"
