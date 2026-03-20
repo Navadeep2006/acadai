@@ -38,8 +38,8 @@ logger = logging.getLogger(__name__)
 
 app = Flask(
     __name__,
-    static_folder=os.path.join(ROOT, "frontend-new", "dist", "assets"),
-    template_folder=os.path.join(ROOT, "frontend-new", "dist")
+    static_folder=os.path.join(ROOT, "frontend-new", "dist"),
+    static_url_path='/'
 )
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-change-me")
 CORS(app, origins="*")
@@ -107,23 +107,21 @@ def require_teacher(f):
 # ─────────────────────────────────────────────────────────────
 #  SERVE REACT FRONTEND (production build)
 # ─────────────────────────────────────────────────────────────
-DIST = os.path.join(ROOT, "frontend-new", "dist")
-
-@app.route("/")
-def index():
-    return send_from_directory(DIST, "index.html")
-
-@app.route("/assets/<path:filename>")
-def assets(filename):
-    return send_from_directory(os.path.join(DIST, "assets"), filename)
-
-# Catch-all: return index.html for any non-API route (React client-side routing)
+@app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
-def catch_all(path):
+def serve(path):
+    # If path is an API call, we let it fall through or error 404 if not found below
     if path.startswith("api/"):
-        from flask import abort
-        abort(404)
-    return send_from_directory(DIST, "index.html")
+        # This will be handled by the route definitions below
+        # but if no API route matches, it might hit this catch-all.
+        # We check if it's a file in static_folder first.
+        pass
+
+    full_path = os.path.join(app.static_folder, path)
+    if path != "" and os.path.exists(full_path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, "index.html")
 
 
 # ─────────────────────────────────────────────────────────────
