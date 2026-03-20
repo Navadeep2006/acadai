@@ -1,7 +1,10 @@
 @echo off
-title AcadAI Server
+title AcadAI
 cd /d "%~dp0"
-echo Starting AcadAI...
+echo ============================================
+echo   AcadAI - Student Performance Analytics
+echo   http://127.0.0.1:5000
+echo ============================================
 echo.
-C:\Users\USER\AppData\Local\Python\pythoncore-3.14-64\python.exe backend/app.py
+python backend/app.py
 pause

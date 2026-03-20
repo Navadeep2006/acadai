@@ -25,7 +25,7 @@ load_dotenv(os.path.join(ROOT, ".env"))
 from ml.model import get_registry, retrain_from_firebase
 from backend.firebase_db import (
     init_firebase, get_all_teachers, get_teacher_by_email, create_teacher, update_teacher,
-    get_all_students, get_student_by_id, create_student, update_student, delete_student,
+    get_all_students, get_student_by_id, get_student_by_roll, create_student, update_student, delete_student,
     save_prediction, get_prediction, get_all_predictions, get_student_records,
     attach_realtime_listener
 )
@@ -38,8 +38,8 @@ logger = logging.getLogger(__name__)
 
 app = Flask(
     __name__,
-    template_folder=os.path.join(ROOT, "frontend", "templates"),
-    static_folder=os.path.join(ROOT, "frontend", "static")
+    static_folder=os.path.join(ROOT, "frontend-new", "dist", "assets"),
+    template_folder=os.path.join(ROOT, "frontend-new", "dist")
 )
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-change-me")
 CORS(app, origins="*")
@@ -105,15 +105,25 @@ def require_teacher(f):
 
 
 # ─────────────────────────────────────────────────────────────
-#  SERVE FRONTEND
+#  SERVE REACT FRONTEND (production build)
 # ─────────────────────────────────────────────────────────────
+DIST = os.path.join(ROOT, "frontend-new", "dist")
+
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return send_from_directory(DIST, "index.html")
 
-@app.route("/static/<path:filename>")
-def static_files(filename):
-    return send_from_directory(app.static_folder, filename)
+@app.route("/assets/<path:filename>")
+def assets(filename):
+    return send_from_directory(os.path.join(DIST, "assets"), filename)
+
+# Catch-all: return index.html for any non-API route (React client-side routing)
+@app.route("/<path:path>")
+def catch_all(path):
+    if path.startswith("api/"):
+        from flask import abort
+        abort(404)
+    return send_from_directory(DIST, "index.html")
 
 
 # ─────────────────────────────────────────────────────────────
@@ -131,15 +141,16 @@ def login():
         if not user or user.get("password") != password:
             return jsonify({"error": "Invalid credentials"}), 401
     elif role == "student":
-        sid      = body.get("studentId", "")
+        roll     = body.get("rollNumber", "").strip()
         password = body.get("password", "")
-        user     = get_student_by_id(sid)
+        user     = get_student_by_roll(roll)
         if not user or user.get("password") != password:
-            return jsonify({"error": "Invalid credentials"}), 401
+            return jsonify({"error": "Invalid roll number or password"}), 401
     else:
         return jsonify({"error": "Invalid role"}), 400
 
-    token = _make_token(user["id"], user["role"])
+    user["role"] = role
+    token = _make_token(user["id"], role)
     safe  = {k: v for k, v in user.items() if k != "password"}
     return jsonify({"token": token, "user": safe})
 

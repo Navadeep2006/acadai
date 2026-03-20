@@ -30,19 +30,19 @@ def _seed_memory():
         "role": "teacher", "subject": "Mathematics & Science", "avatar": "SM"
     }
     students = [
-        {"id":"s1","name":"Alex Johnson","password":"alex123","grade":"10th","avatar":"AJ",
+        {"id":"s1","name":"Alex Johnson","rollNumber":"1001","password":"alex123","grade":"10th","avatar":"AJ","role":"student",
          "data":{"attendance":88,"studyHours":3.5,"assignmentScore":76,"participation":72,
                  "prevMarks":[68,74,71,79],"quizScores":[70,75,68,82],
                  "subjects":{"Math":74,"Science":68,"English":82,"History":77,"CS":88}}},
-        {"id":"s2","name":"Priya Sharma","password":"priya123","grade":"10th","avatar":"PS",
+        {"id":"s2","name":"Priya Sharma","rollNumber":"1002","password":"priya123","grade":"10th","avatar":"PS","role":"student",
          "data":{"attendance":96,"studyHours":5.5,"assignmentScore":91,"participation":88,
                  "prevMarks":[85,89,87,92],"quizScores":[88,90,86,94],
                  "subjects":{"Math":92,"Science":89,"English":94,"History":88,"CS":91}}},
-        {"id":"s3","name":"Marcus Williams","password":"marcus123","grade":"10th","avatar":"MW",
+        {"id":"s3","name":"Marcus Williams","rollNumber":"1003","password":"marcus123","grade":"10th","avatar":"MW","role":"student",
          "data":{"attendance":71,"studyHours":2.0,"assignmentScore":58,"participation":55,
                  "prevMarks":[52,48,61,55],"quizScores":[50,55,48,62],
                  "subjects":{"Math":54,"Science":48,"English":65,"History":60,"CS":58}}},
-        {"id":"s4","name":"Yuki Tanaka","password":"yuki123","grade":"10th","avatar":"YT",
+        {"id":"s4","name":"Yuki Tanaka","rollNumber":"1004","password":"yuki123","grade":"10th","avatar":"YT","role":"student",
          "data":{"attendance":93,"studyHours":4.8,"assignmentScore":85,"participation":80,
                  "prevMarks":[80,83,86,88],"quizScores":[82,84,87,90],
                  "subjects":{"Math":88,"Science":85,"English":80,"History":83,"CS":90}}}
@@ -51,6 +51,7 @@ def _seed_memory():
         _mem["students"][s["id"]] = s
 
 _seed_memory()
+
 
 
 # ─────────────────────────────────────────────────────────────
@@ -137,6 +138,11 @@ def get_student_by_id(sid: str):
     if _is_firebase():
         return _db.child("students").child(sid).get()
     return _mem["students"].get(sid)
+
+def get_student_by_roll(roll: str):
+    """Look up a student by rollNumber."""
+    students = get_all_students()
+    return next((s for s in students if str(s.get("rollNumber", "")) == str(roll)), None)
 
 def create_student(data: dict):
     sid = "s" + str(uuid.uuid4())[:8]
