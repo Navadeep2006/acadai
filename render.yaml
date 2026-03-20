@@ -3,11 +3,9 @@ services:
     name: acadai
     runtime: python
     buildCommand: "cd frontend-new && npm install && npm run build && cd .. && pip install -r requirements.txt"
-    startCommand: "gunicorn backend.app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    startCommand: "gunicorn -b 0.0.0.0:$PORT backend.app:app --workers 2 --timeout 120"
     envVars:
       - key: FLASK_ENV
         value: production
       - key: SECRET_KEY
         generateValue: true
-      - key: PORT
-        value: 10000
