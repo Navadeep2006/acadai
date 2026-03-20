@@ -105,23 +105,8 @@ def require_teacher(f):
 
 
 # ─────────────────────────────────────────────────────────────
-#  SERVE REACT FRONTEND (production build)
+#  API ENDPOINTS (defined below)
 # ─────────────────────────────────────────────────────────────
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
-def serve(path):
-    # If path is an API call, we let it fall through or error 404 if not found below
-    if path.startswith("api/"):
-        # This will be handled by the route definitions below
-        # but if no API route matches, it might hit this catch-all.
-        # We check if it's a file in static_folder first.
-        pass
-
-    full_path = os.path.join(app.static_folder, path)
-    if path != "" and os.path.exists(full_path):
-        return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, "index.html")
 
 
 # ─────────────────────────────────────────────────────────────
@@ -432,10 +417,21 @@ attach_realtime_listener(_on_firebase_change)
 
 
 # ─────────────────────────────────────────────────────────────
-#  ERROR HANDLERS
+#  FRONTEND SERVING (Catch-all)
 # ─────────────────────────────────────────────────────────────
+@app.route("/")
+def index():
+    return app.send_static_file("index.html")
+
 @app.errorhandler(404)
-def not_found(e):
+def handle_404(e):
+    # If a path is requested that doesn't match an API route, 
+    # we serve the React app's index.html to let React Router handle it.
+    if not request.path.startswith("/api/"):
+        try:
+            return app.send_static_file("index.html")
+        except:
+            pass
     return jsonify({"error": "Not found"}), 404
 
 @app.errorhandler(500)
